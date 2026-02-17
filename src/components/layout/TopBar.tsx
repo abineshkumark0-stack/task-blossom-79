@@ -15,7 +15,7 @@ export function TopBar({ onAddTask }: TopBarProps) {
   const { searchQuery, setSearchQuery, filterCategory, setFilterCategory, filterStatus, setFilterStatus } = useTasks();
 
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-sm border-b border-border px-4 md:px-6 py-3">
+    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 md:px-6 py-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -23,12 +23,12 @@ export function TopBar({ onAddTask }: TopBarProps) {
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 rounded-xl border-border/60 bg-muted/50 focus:bg-card transition-colors"
           />
         </div>
 
         <Select value={filterCategory} onValueChange={v => setFilterCategory(v as Category | 'all')}>
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger className="w-[130px] rounded-xl">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -41,7 +41,7 @@ export function TopBar({ onAddTask }: TopBarProps) {
         </Select>
 
         <Select value={filterStatus} onValueChange={v => setFilterStatus(v as FilterStatus)}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-[120px] rounded-xl">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -53,10 +53,15 @@ export function TopBar({ onAddTask }: TopBarProps) {
         </Select>
 
         <div className="flex items-center gap-2 ml-auto">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="shrink-0">
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="shrink-0 rounded-xl hover:bg-accent"
+          >
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5 text-category-work" />}
           </Button>
-          <Button onClick={onAddTask} size="sm" className="gap-1.5">
+          <Button onClick={onAddTask} size="sm" className="gap-1.5 gradient-primary text-white rounded-xl glow-primary border-0 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Task</span>
           </Button>
