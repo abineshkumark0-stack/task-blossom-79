@@ -2,8 +2,7 @@ import { Task, CATEGORY_CONFIG } from '@/types/task';
 import { useTasks } from '@/contexts/TaskContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Clock } from 'lucide-react';
+import { Pencil, Trash2, Clock, BookOpen, Briefcase, Heart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, isBefore } from 'date-fns';
 
@@ -27,28 +26,68 @@ const categoryGradient: Record<string, string> = {
   health: 'gradient-health',
 };
 
+const categoryIcons: Record<string, React.ElementType> = {
+  study: BookOpen,
+  work: Briefcase,
+  personal: User,
+  health: Heart,
+};
+
+// Emoji per category
+const categoryEmoji: Record<string, string> = {
+  study: '📚',
+  work: '💼',
+  personal: '✨',
+  health: '💚',
+};
+
+function CategoryBadge({ category }: { category: string }) {
+  const cat = CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG];
+  const Icon = categoryIcons[category];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide",
+        `badge-${category}`
+      )}
+    >
+      <Icon className="h-3 w-3" />
+      {cat.label}
+    </span>
+  );
+}
+
 export function TaskItem({ task, onEdit, variant = 'list' }: TaskItemProps) {
   const { toggleComplete, deleteTask } = useTasks();
-  const cat = CATEGORY_CONFIG[task.category];
   const isOverdue = !task.completed && isBefore(new Date(`${task.date}T${task.time}`), new Date());
+
+  // Persist task completion state explicitly
+  const handleToggle = () => {
+    const updated = { ...task, completed: !task.completed };
+    localStorage.setItem(`task-${task.id}`, JSON.stringify(updated));
+    toggleComplete(task.id);
+  };
 
   if (variant === 'card') {
     return (
       <div className={cn(
-        "rounded-xl border bg-card p-4 flex flex-col gap-3 card-hover-lift relative overflow-hidden",
-        task.completed ? "opacity-60" : categoryGlow[task.category]
+        "rounded-2xl border bg-card p-4 flex flex-col gap-3 card-hover-lift relative overflow-hidden group",
+        task.completed ? "opacity-70" : categoryGlow[task.category]
       )}>
         {/* Category accent stripe */}
-        <div className={cn("absolute top-0 left-0 w-full h-1", categoryGradient[task.category])} />
-        <div className="flex items-start justify-between gap-2 pt-1">
+        <div className={cn("absolute top-0 left-0 w-full h-1.5 rounded-t-2xl", categoryGradient[task.category])} />
+        <div className="flex items-start justify-between gap-2 pt-2">
           <div className="flex items-start gap-2.5 flex-1 min-w-0">
             <Checkbox
               checked={task.completed}
-              onCheckedChange={() => toggleComplete(task.id)}
-              className="mt-0.5"
+              onCheckedChange={handleToggle}
+              className="mt-0.5 shrink-0"
             />
-            <div className="min-w-0">
-              <p className={cn("font-semibold truncate", task.completed && "line-through text-muted-foreground")}>
+            <div className={cn("min-w-0", task.completed && "task-completed")}>
+              <p className={cn(
+                "font-semibold truncate task-strikethrough transition-colors duration-300",
+                task.completed && "text-muted-foreground"
+              )}>
                 {task.title}
               </p>
               {task.description && (
@@ -56,16 +95,19 @@ export function TaskItem({ task, onEdit, variant = 'list' }: TaskItemProps) {
               )}
             </div>
           </div>
-          <Badge variant="outline" className={cn(cat.bgClass, cat.textClass, "border-0 text-xs shrink-0 font-semibold")}>
-            {cat.label}
-          </Badge>
+          <CategoryBadge category={task.category} />
         </div>
         <div className="flex items-center justify-between mt-auto">
-          <div className={cn("flex items-center gap-1 text-xs font-medium", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-            <Clock className="h-3 w-3" />
-            {format(new Date(`${task.date}T${task.time}`), 'MMM d, h:mm a')}
+          <div className={cn(
+            "flex items-center gap-1.5 text-xs font-bold",
+            isOverdue ? "text-destructive" : "text-foreground/70"
+          )}>
+            <Clock className="h-3 w-3 shrink-0" />
+            <span className="font-bold">
+              {format(new Date(`${task.date}T${task.time}`), 'MMM d, h:mm a')}
+            </span>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-accent" onClick={() => onEdit(task)}>
               <Pencil className="h-3.5 w-3.5" />
             </Button>
@@ -80,34 +122,42 @@ export function TaskItem({ task, onEdit, variant = 'list' }: TaskItemProps) {
 
   return (
     <div className={cn(
-      "flex items-center gap-3 p-3 rounded-xl border bg-card card-hover-lift relative overflow-hidden",
-      task.completed ? "opacity-60" : ""
+      "flex items-center gap-3 p-3 rounded-2xl border bg-card card-hover-lift relative overflow-hidden group",
+      task.completed ? "opacity-70" : ""
     )}>
       {/* Left color accent bar */}
-      <div className={cn("absolute left-0 top-0 w-1 h-full rounded-l-xl", categoryGradient[task.category])} />
-      <div className="pl-2">
+      <div className={cn("absolute left-0 top-0 w-1.5 h-full rounded-l-2xl", categoryGradient[task.category])} />
+      <div className="pl-2 shrink-0">
         <Checkbox
           checked={task.completed}
-          onCheckedChange={() => toggleComplete(task.id)}
+          onCheckedChange={handleToggle}
         />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className={cn("font-semibold truncate", task.completed && "line-through text-muted-foreground")}>
+      <div className={cn("flex-1 min-w-0", task.completed && "task-completed")}>
+        <p className={cn(
+          "font-semibold truncate task-strikethrough transition-colors duration-300",
+          task.completed && "text-muted-foreground"
+        )}>
           {task.title}
         </p>
         {task.description && (
           <p className="text-sm text-muted-foreground truncate">{task.description}</p>
         )}
       </div>
-      <Badge variant="outline" className={cn(cat.bgClass, cat.textClass, "border-0 text-xs hidden sm:inline-flex font-semibold")}>
-        {cat.label}
-      </Badge>
-      <div className={cn("flex items-center gap-1 text-xs shrink-0 font-medium", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-        <Clock className="h-3 w-3" />
-        <span className="hidden sm:inline">{format(new Date(`${task.date}T${task.time}`), 'MMM d,')}</span>
-        {format(new Date(`${task.date}T${task.time}`), 'h:mm a')}
+      <CategoryBadge category={task.category} />
+      <div className={cn(
+        "flex items-center gap-1 text-xs shrink-0 font-bold",
+        isOverdue ? "text-destructive" : "text-foreground/70"
+      )}>
+        <Clock className="h-3 w-3 shrink-0" />
+        <span className="hidden sm:inline font-bold">
+          {format(new Date(`${task.date}T${task.time}`), 'MMM d,')}
+        </span>
+        <span className="font-bold">
+          {format(new Date(`${task.date}T${task.time}`), 'h:mm a')}
+        </span>
       </div>
-      <div className="flex gap-1 shrink-0">
+      <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" onClick={() => onEdit(task)}>
           <Pencil className="h-3.5 w-3.5" />
         </Button>
