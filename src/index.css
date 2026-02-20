@@ -166,4 +166,59 @@
   .card-hover-lift:hover {
     transform: translateY(-2px);
   }
+
+  /* Smooth animated strikethrough */
+  .task-strikethrough {
+    position: relative;
+    display: inline;
+  }
+  .task-strikethrough::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 0%;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 1px;
+  }
+  .task-completed .task-strikethrough::after {
+    width: 100%;
+  }
+
+  /* Completion progress bar */
+  .completion-bar-fill {
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Round add button pulse ring */
+  .add-btn-ring {
+    @apply relative;
+  }
+  .add-btn-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--gradient-health);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: -1;
+    filter: blur(6px);
+  }
+  .add-btn-ring:hover::before {
+    opacity: 0.55;
+  }
+
+  /* Category badge glow */
+  .badge-study { background: hsl(217 91% 60% / 0.18); color: hsl(217 91% 45%); }
+  .badge-work { background: hsl(25 95% 53% / 0.18); color: hsl(25 95% 40%); }
+  .badge-personal { background: hsl(280 85% 60% / 0.18); color: hsl(280 85% 48%); }
+  .badge-health { background: hsl(160 84% 39% / 0.18); color: hsl(160 84% 30%); }
+
+  .dark .badge-study { background: hsl(217 91% 60% / 0.22); color: hsl(217 91% 72%); }
+  .dark .badge-work { background: hsl(25 95% 53% / 0.22); color: hsl(25 95% 68%); }
+  .dark .badge-personal { background: hsl(280 85% 60% / 0.22); color: hsl(280 85% 75%); }
+  .dark .badge-health { background: hsl(160 84% 39% / 0.22); color: hsl(160 84% 58%); }
 }
