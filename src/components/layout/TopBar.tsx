@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/hooks/useTheme';
 import { useTasks } from '@/contexts/TaskContext';
-import { Category, FilterStatus } from '@/types/task';
+import { Category, FilterStatus, CATEGORY_CONFIG } from '@/types/task';
 
 interface TopBarProps {
   onAddTask: () => void;
@@ -15,7 +15,7 @@ export function TopBar({ onAddTask }: TopBarProps) {
   const { searchQuery, setSearchQuery, filterCategory, setFilterCategory, filterStatus, setFilterStatus } = useTasks();
 
   return (
-    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 md:px-6 py-3">
+    <header className="sticky top-0 z-40 glass border-b border-border px-4 md:px-6 py-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -33,10 +33,9 @@ export function TopBar({ onAddTask }: TopBarProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="study">📘 Study</SelectItem>
-            <SelectItem value="work">💼 Work</SelectItem>
-            <SelectItem value="personal">💜 Personal</SelectItem>
-            <SelectItem value="health">💚 Health</SelectItem>
+            {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
+              <SelectItem key={key} value={key}>{cfg.emoji} {cfg.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -53,15 +52,10 @@ export function TopBar({ onAddTask }: TopBarProps) {
         </Select>
 
         <div className="flex items-center gap-2 ml-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="shrink-0 rounded-xl hover:bg-accent"
-          >
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="shrink-0 rounded-xl hover:bg-accent">
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5 text-category-work" />}
           </Button>
-          <Button onClick={onAddTask} size="sm" className="gap-1.5 gradient-primary text-white rounded-xl glow-primary border-0 hover:opacity-90 transition-opacity">
+          <Button onClick={onAddTask} size="sm" className="gap-1.5 gradient-primary text-primary-foreground rounded-xl glow-primary border-0 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Task</span>
           </Button>

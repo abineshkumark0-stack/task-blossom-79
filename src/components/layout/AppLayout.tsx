@@ -2,6 +2,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useState } from 'react';
 import { TaskModal } from '@/components/tasks/TaskModal';
+import { ChatBot } from '@/components/chat/ChatBot';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -16,6 +17,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <TaskModal open={modalOpen} onOpenChange={setModalOpen} />
+      <ChatBot />
     </div>
   );
 }

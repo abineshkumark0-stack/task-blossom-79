@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTasks } from '@/contexts/TaskContext';
-import { Task, Category, CATEGORY_CONFIG } from '@/types/task';
+import { Task, Category, CATEGORY_CONFIG, Priority, RepeatOption } from '@/types/task';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -23,6 +23,8 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [time, setTime] = useState(format(new Date(), 'HH:mm'));
   const [category, setCategory] = useState<Category>('personal');
+  const [priority, setPriority] = useState<Priority>('medium');
+  const [repeat, setRepeat] = useState<RepeatOption>('none');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -32,12 +34,13 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
       setDate(editingTask.date);
       setTime(editingTask.time);
       setCategory(editingTask.category);
+      setPriority(editingTask.priority || 'medium');
+      setRepeat(editingTask.repeat || 'none');
     } else {
-      setTitle('');
-      setDescription('');
+      setTitle(''); setDescription('');
       setDate(format(new Date(), 'yyyy-MM-dd'));
       setTime(format(new Date(), 'HH:mm'));
-      setCategory('personal');
+      setCategory('personal'); setPriority('medium'); setRepeat('none');
     }
     setErrors({});
   }, [editingTask, open]);
@@ -56,10 +59,10 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
     if (!validate()) return;
 
     if (editingTask) {
-      updateTask(editingTask.id, { title: title.trim(), description: description.trim(), date, time, category });
+      updateTask(editingTask.id, { title: title.trim(), description: description.trim(), date, time, category, priority, repeat });
       toast.success('Task updated!');
     } else {
-      addTask({ title: title.trim(), description: description.trim(), date, time, category });
+      addTask({ title: title.trim(), description: description.trim(), date, time, category, priority, repeat });
       toast.success('Task added!');
     }
     onOpenChange(false);
@@ -67,7 +70,7 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md glass-card">
         <DialogHeader>
           <DialogTitle>{editingTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
         </DialogHeader>
@@ -93,22 +96,45 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
               {errors.time && <p className="text-xs text-destructive mt-1">{errors.time}</p>}
             </div>
           </div>
-          <div>
-            <Label>Category</Label>
-            <Select value={category} onValueChange={v => setCategory(v as Category)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
-                  <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label>Category</Label>
+              <Select value={category} onValueChange={v => setCategory(v as Category)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
+                    <SelectItem key={key} value={key}>{cfg.emoji} {cfg.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={v => setPriority(v as Priority)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">🟢 Low</SelectItem>
+                  <SelectItem value="medium">🟡 Medium</SelectItem>
+                  <SelectItem value="high">🔴 High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Repeat</Label>
+              <Select value={repeat} onValueChange={v => setRepeat(v as RepeatOption)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit">{editingTask ? 'Save Changes' : 'Add Task'}</Button>
+            <Button type="submit" className="gradient-primary text-primary-foreground border-0">{editingTask ? 'Save Changes' : 'Add Task'}</Button>
           </div>
         </form>
       </DialogContent>

@@ -8,6 +8,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import AllTasks from "./pages/AllTasks";
 import CalendarView from "./pages/CalendarView";
+import Analytics from "./pages/Analytics";
+import Goals from "./pages/Goals";
+import Timetable from "./pages/Timetable";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +28,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/tasks" element={<AllTasks />} />
               <Route path="/calendar" element={<CalendarView />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/timetable" element={<Timetable />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
