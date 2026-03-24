@@ -29,12 +29,8 @@ const DEFAULT_PREFS: NotificationPrefs = {
   vibration: true,
   vibrationPattern: 'medium',
 };
-  enabled: true,
-  beforeMinutes: 5,
-  dailySummary: true,
-  streakAlerts: true,
-  goalReminders: true,
-};
+
+const supportsVibration = () => 'vibrate' in navigator;
 
 export function useNotifications(tasks: Task[]) {
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
