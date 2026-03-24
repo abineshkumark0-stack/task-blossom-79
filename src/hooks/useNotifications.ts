@@ -5,11 +5,20 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 export interface NotificationPrefs {
   enabled: boolean;
-  beforeMinutes: number; // remind X minutes before
+  beforeMinutes: number;
   dailySummary: boolean;
   streakAlerts: boolean;
   goalReminders: boolean;
+  vibration: boolean;
+  vibrationPattern: 'short' | 'medium' | 'long' | 'double';
 }
+
+const VIBRATION_PATTERNS: Record<NotificationPrefs['vibrationPattern'], number[]> = {
+  short: [100],
+  medium: [200, 100, 200],
+  long: [500, 200, 500],
+  double: [100, 50, 100],
+};
 
 const DEFAULT_PREFS: NotificationPrefs = {
   enabled: true,
@@ -17,7 +26,11 @@ const DEFAULT_PREFS: NotificationPrefs = {
   dailySummary: true,
   streakAlerts: true,
   goalReminders: true,
+  vibration: true,
+  vibrationPattern: 'medium',
 };
+
+const supportsVibration = () => 'vibrate' in navigator;
 
 export function useNotifications(tasks: Task[]) {
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -32,13 +45,20 @@ export function useNotifications(tasks: Task[]) {
     }
   }, []);
 
+  const vibrate = useCallback((pattern?: NotificationPrefs['vibrationPattern']) => {
+    if (prefs.vibration && supportsVibration()) {
+      navigator.vibrate(VIBRATION_PATTERNS[pattern || prefs.vibrationPattern]);
+    }
+  }, [prefs.vibration, prefs.vibrationPattern]);
+
   const sendNotification = useCallback((title: string, body: string, tag?: string) => {
     if ('Notification' in window && Notification.permission === 'granted' && prefs.enabled) {
       new Notification(title, { body, icon: '/placeholder.svg', tag, badge: '/placeholder.svg' });
     } else {
       toast.info(title, { description: body });
     }
-  }, [prefs.enabled]);
+    vibrate();
+  }, [prefs.enabled, vibrate]);
 
   useEffect(() => {
     if (prefs.enabled) requestPermission();

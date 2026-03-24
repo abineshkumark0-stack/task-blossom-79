@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
+import { Smartphone } from 'lucide-react';
 import { Sun, Moon, Bell, Calendar, Clock, BarChart3 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -133,6 +134,55 @@ const Settings = () => {
             </div>
             <Switch checked={prefs.goalReminders} onCheckedChange={(v) => updatePref('goalReminders', v)} />
           </div>
+
+          {'vibrate' in navigator && (
+            <>
+              <div className="border-t pt-4 mt-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                  <Label className="text-sm font-medium">Mobile Vibration</Label>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Vibrate on Notifications</Label>
+                      <p className="text-xs text-muted-foreground">Vibrate your phone when a reminder fires</p>
+                    </div>
+                    <Switch checked={prefs.vibration} onCheckedChange={(v) => updatePref('vibration', v)} />
+                  </div>
+
+                  {prefs.vibration && (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Vibration Pattern</Label>
+                        <p className="text-xs text-muted-foreground">Choose how the vibration feels</p>
+                      </div>
+                      <Select
+                        value={prefs.vibrationPattern}
+                        onValueChange={(v) => {
+                          updatePref('vibrationPattern', v as any);
+                          navigator.vibrate(
+                            v === 'short' ? [100] : v === 'medium' ? [200, 100, 200] : v === 'long' ? [500, 200, 500] : [100, 50, 100]
+                          );
+                        }}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="short">Short</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="long">Long</SelectItem>
+                          <SelectItem value="double">Double tap</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
