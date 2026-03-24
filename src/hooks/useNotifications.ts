@@ -45,13 +45,20 @@ export function useNotifications(tasks: Task[]) {
     }
   }, []);
 
+  const vibrate = useCallback((pattern?: NotificationPrefs['vibrationPattern']) => {
+    if (prefs.vibration && supportsVibration()) {
+      navigator.vibrate(VIBRATION_PATTERNS[pattern || prefs.vibrationPattern]);
+    }
+  }, [prefs.vibration, prefs.vibrationPattern]);
+
   const sendNotification = useCallback((title: string, body: string, tag?: string) => {
     if ('Notification' in window && Notification.permission === 'granted' && prefs.enabled) {
       new Notification(title, { body, icon: '/placeholder.svg', tag, badge: '/placeholder.svg' });
     } else {
       toast.info(title, { description: body });
     }
-  }, [prefs.enabled]);
+    vibrate();
+  }, [prefs.enabled, vibrate]);
 
   useEffect(() => {
     if (prefs.enabled) requestPermission();
