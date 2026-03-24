@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TaskProvider } from "@/contexts/TaskContext";
+import { I18nProvider } from "@/contexts/I18nContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import AllTasks from "./pages/AllTasks";
@@ -22,6 +23,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <I18nProvider>
         <TaskProvider>
           <AppLayout>
             <Routes>
@@ -36,6 +38,7 @@ const App = () => (
             </Routes>
           </AppLayout>
         </TaskProvider>
+        </I18nProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

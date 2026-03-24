@@ -3,21 +3,23 @@ import { LayoutDashboard, ListTodo, CalendarDays, Settings, ChevronLeft, Chevron
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useTasks } from '@/contexts/TaskContext';
-
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/tasks', icon: ListTodo, label: 'All Tasks' },
-  { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
-  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/goals', icon: Target, label: 'Goals' },
-  { to: '/timetable', icon: Clock, label: 'Timetable' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
-];
+import { useI18n } from '@/contexts/I18nContext';
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const { streak } = useTasks();
+  const { t } = useI18n();
+
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
+    { to: '/tasks', icon: ListTodo, label: t('nav.allTasks') },
+    { to: '/calendar', icon: CalendarDays, label: t('nav.calendar') },
+    { to: '/analytics', icon: BarChart3, label: t('nav.analytics') },
+    { to: '/goals', icon: Target, label: t('nav.goals') },
+    { to: '/timetable', icon: Clock, label: t('nav.timetable') },
+    { to: '/settings', icon: Settings, label: t('nav.settings') },
+  ];
 
   return (
     <>
@@ -32,7 +34,7 @@ export function Sidebar() {
               <div className="gradient-primary p-1.5 rounded-lg">
                 <Sparkles className="h-4 w-4 text-primary-foreground" />
               </div>
-              <h1 className="text-lg font-bold text-sidebar-foreground tracking-tight">Productivity</h1>
+              <h1 className="text-lg font-bold text-sidebar-foreground tracking-tight">{t('nav.productivity')}</h1>
             </div>
           )}
           {collapsed && (
@@ -51,7 +53,7 @@ export function Sidebar() {
         {/* Streak badge */}
         {!collapsed && streak.current > 0 && (
           <div className="mx-3 mt-3 px-3 py-2 rounded-xl streak-badge text-sm font-bold flex items-center gap-2">
-            🔥 {streak.current} Day Streak
+            🔥 {streak.current} {t('streak.dayStreak')}
             {streak.current >= 7 && <span className="text-xs opacity-80">🏆</span>}
             {streak.current >= 30 && <span className="text-xs opacity-80">⭐</span>}
             {streak.current >= 100 && <span className="text-xs opacity-80">💎</span>}

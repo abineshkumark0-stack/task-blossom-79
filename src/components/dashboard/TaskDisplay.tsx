@@ -6,6 +6,7 @@ import { LayoutList, LayoutGrid } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface TaskDisplayProps {
   onEditTask: (task: Task) => void;
@@ -13,6 +14,7 @@ interface TaskDisplayProps {
 
 export function TaskDisplay({ onEditTask }: TaskDisplayProps) {
   const { filteredTasks, viewMode, setViewMode } = useTasks();
+  const { t } = useI18n();
 
   const groupedTasks = useMemo(() => {
     const groups: Record<string, Task[]> = {};
@@ -32,7 +34,7 @@ export function TaskDisplay({ onEditTask }: TaskDisplayProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Tasks</h2>
+        <h2 className="text-lg font-semibold">{t('dashboard.tasks')}</h2>
         <div className="flex items-center border rounded-lg overflow-hidden">
           <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" className="rounded-none h-8" onClick={() => setViewMode('list')}>
             <LayoutList className="h-4 w-4" />
@@ -45,8 +47,8 @@ export function TaskDisplay({ onEditTask }: TaskDisplayProps) {
 
       {filteredTasks.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 text-muted-foreground">
-          <p className="text-lg">No tasks found</p>
-          <p className="text-sm mt-1">Add a new task to get started!</p>
+          <p className="text-lg">{t('task.noTasks')}</p>
+          <p className="text-sm mt-1">{t('task.addToStart')}</p>
         </motion.div>
       ) : viewMode === 'list' ? (
         <div className="space-y-6">
