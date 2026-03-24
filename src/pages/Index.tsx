@@ -3,6 +3,7 @@ import { StatsCards } from '@/components/dashboard/StatsCards';
 import { TaskDisplay } from '@/components/dashboard/TaskDisplay';
 import { TaskModal } from '@/components/tasks/TaskModal';
 import { CompletionBar } from '@/components/dashboard/CompletionBar';
+import { AISuggestions } from '@/components/dashboard/AISuggestions';
 import { Task } from '@/types/task';
 import { Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
