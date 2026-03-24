@@ -55,6 +55,8 @@ const Index = () => {
 
       <StatsCards />
       <CompletionBar />
+      <AISuggestions />
+      <TaskDisplay onEditTask={handleEdit} />
       <TaskDisplay onEditTask={handleEdit} />
 
       <TaskModal open={addModalOpen} onOpenChange={setAddModalOpen} editingTask={null} />
