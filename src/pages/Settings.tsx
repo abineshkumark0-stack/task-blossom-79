@@ -1,29 +1,45 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
-import { Sun, Moon, Bell, Calendar } from 'lucide-react';
+import { Sun, Moon, Bell, Calendar, Clock, BarChart3 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useNotifications, NotificationPrefs } from '@/hooks/useNotifications';
+import { useTasks } from '@/contexts/TaskContext';
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
+  const { tasks } = useTasks();
+  const { prefs, setPrefs, requestPermission } = useNotifications(tasks);
 
-  const handleNotificationPermission = async () => {
+  const updatePref = <K extends keyof NotificationPrefs>(key: K, value: NotificationPrefs[K]) => {
+    setPrefs(prev => ({ ...prev, [key]: value }));
+    toast.success('Notification preference updated');
+  };
+
+  const handleEnableNotifications = async () => {
     if (!('Notification' in window)) {
       toast.error('Browser notifications not supported');
       return;
     }
     const result = await Notification.requestPermission();
-    if (result === 'granted') toast.success('Notifications enabled!');
-    else toast.info('Notifications permission denied');
+    if (result === 'granted') {
+      updatePref('enabled', true);
+      toast.success('🔔 Notifications enabled!');
+    } else {
+      toast.info('Notification permission denied. You can enable it in browser settings.');
+    }
   };
+
+  const permissionStatus = 'Notification' in window ? Notification.permission : 'unsupported';
 
   return (
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
 
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             {theme === 'light' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -38,24 +54,89 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Bell className="h-5 w-5" />
             Notifications
           </CardTitle>
+          <CardDescription>
+            {permissionStatus === 'granted'
+              ? '✅ Browser notifications are enabled'
+              : permissionStatus === 'denied'
+              ? '❌ Notifications blocked — enable in browser settings'
+              : '⚠️ Notifications not yet enabled'}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Enable browser notifications to receive reminders for your tasks.
-          </p>
-          <Button variant="outline" onClick={handleNotificationPermission}>
-            Enable Notifications
-          </Button>
+        <CardContent className="space-y-5">
+          {permissionStatus !== 'granted' && (
+            <Button variant="outline" onClick={handleEnableNotifications} className="gap-2">
+              <Bell className="h-4 w-4" />
+              Enable Browser Notifications
+            </Button>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Task Reminders</Label>
+              <p className="text-xs text-muted-foreground">Get notified before tasks are due</p>
+            </div>
+            <Switch checked={prefs.enabled} onCheckedChange={(v) => updatePref('enabled', v)} />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" />
+                Remind Before
+              </Label>
+              <p className="text-xs text-muted-foreground">How early to send the reminder</p>
+            </div>
+            <Select
+              value={String(prefs.beforeMinutes)}
+              onValueChange={(v) => updatePref('beforeMinutes', Number(v))}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 minute</SelectItem>
+                <SelectItem value="5">5 minutes</SelectItem>
+                <SelectItem value="10">10 minutes</SelectItem>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="60">1 hour</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Daily Summary</Label>
+              <p className="text-xs text-muted-foreground">Morning overview of today's tasks</p>
+            </div>
+            <Switch checked={prefs.dailySummary} onCheckedChange={(v) => updatePref('dailySummary', v)} />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Streak Alerts</Label>
+              <p className="text-xs text-muted-foreground">Remind you to maintain your streak</p>
+            </div>
+            <Switch checked={prefs.streakAlerts} onCheckedChange={(v) => updatePref('streakAlerts', v)} />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Goal Reminders</Label>
+              <p className="text-xs text-muted-foreground">Progress updates for active goals</p>
+            </div>
+            <Switch checked={prefs.goalReminders} onCheckedChange={(v) => updatePref('goalReminders', v)} />
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Calendar className="h-5 w-5" />
