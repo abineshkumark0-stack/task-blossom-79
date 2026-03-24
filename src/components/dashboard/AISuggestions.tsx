@@ -42,7 +42,8 @@ export function AISuggestions() {
 
     // Goal-related suggestions
     if (goals.length > 0) {
-      const activeGoals = goals.filter(g => g.active);
+      const now = new Date();
+      const activeGoals = goals.filter(g => new Date(g.endDate) >= now);
       activeGoals.forEach(goal => {
         const pct = Math.round((goal.completedDays / goal.totalDays) * 100);
         if (pct === 0) {
