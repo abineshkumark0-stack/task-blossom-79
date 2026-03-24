@@ -1,19 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
-import { Smartphone } from 'lucide-react';
-import { Sun, Moon, Bell, Calendar, Clock, BarChart3 } from 'lucide-react';
+import { Sun, Moon, Bell, Calendar, Clock, Globe, Smartphone } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useNotifications, NotificationPrefs } from '@/hooks/useNotifications';
 import { useTasks } from '@/contexts/TaskContext';
+import { useI18n, LANGUAGES, Language } from '@/contexts/I18nContext';
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
   const { tasks } = useTasks();
   const { prefs, setPrefs, requestPermission } = useNotifications(tasks);
+  const { t, language, setLanguage } = useI18n();
 
   const updatePref = <K extends keyof NotificationPrefs>(key: K, value: NotificationPrefs[K]) => {
     setPrefs(prev => ({ ...prev, [key]: value }));
@@ -38,49 +39,80 @@ const Settings = () => {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+      <h1 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h1>
 
+      {/* Language */}
+      <Card className="glass-card border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Globe className="h-5 w-5" />
+            {t('settings.language')}
+          </CardTitle>
+          <CardDescription>{t('settings.selectLanguage')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(LANGUAGES).map(([code, lang]) => (
+                <SelectItem key={code} value={code}>
+                  <span className="flex items-center gap-2">
+                    <span>{lang.flag}</span>
+                    <span>{lang.nativeLabel}</span>
+                    <span className="text-muted-foreground text-xs">({lang.label})</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      {/* Appearance */}
       <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             {theme === 'light' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            Appearance
+            {t('settings.appearance')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <Label>Dark Mode</Label>
+            <Label>{t('settings.darkMode')}</Label>
             <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
           </div>
         </CardContent>
       </Card>
 
+      {/* Notifications */}
       <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Bell className="h-5 w-5" />
-            Notifications
+            {t('settings.notifications')}
           </CardTitle>
           <CardDescription>
             {permissionStatus === 'granted'
-              ? '✅ Browser notifications are enabled'
+              ? `✅ ${t('settings.notifEnabled')}`
               : permissionStatus === 'denied'
-              ? '❌ Notifications blocked — enable in browser settings'
-              : '⚠️ Notifications not yet enabled'}
+              ? `❌ ${t('settings.notifBlocked')}`
+              : `⚠️ ${t('settings.notifPending')}`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {permissionStatus !== 'granted' && (
             <Button variant="outline" onClick={handleEnableNotifications} className="gap-2">
               <Bell className="h-4 w-4" />
-              Enable Browser Notifications
+              {t('settings.enableNotif')}
             </Button>
           )}
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Task Reminders</Label>
-              <p className="text-xs text-muted-foreground">Get notified before tasks are due</p>
+              <Label>{t('settings.taskReminders')}</Label>
+              <p className="text-xs text-muted-foreground">{t('settings.taskRemindersDesc')}</p>
             </div>
             <Switch checked={prefs.enabled} onCheckedChange={(v) => updatePref('enabled', v)} />
           </div>
@@ -89,9 +121,9 @@ const Settings = () => {
             <div>
               <Label className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
-                Remind Before
+                {t('settings.remindBefore')}
               </Label>
-              <p className="text-xs text-muted-foreground">How early to send the reminder</p>
+              <p className="text-xs text-muted-foreground">{t('settings.remindBeforeDesc')}</p>
             </div>
             <Select
               value={String(prefs.beforeMinutes)}
@@ -101,36 +133,36 @@ const Settings = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1 minute</SelectItem>
-                <SelectItem value="5">5 minutes</SelectItem>
-                <SelectItem value="10">10 minutes</SelectItem>
-                <SelectItem value="15">15 minutes</SelectItem>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="60">1 hour</SelectItem>
+                <SelectItem value="1">{t('remind.1min')}</SelectItem>
+                <SelectItem value="5">{t('remind.5min')}</SelectItem>
+                <SelectItem value="10">{t('remind.10min')}</SelectItem>
+                <SelectItem value="15">{t('remind.15min')}</SelectItem>
+                <SelectItem value="30">{t('remind.30min')}</SelectItem>
+                <SelectItem value="60">{t('remind.1hr')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Daily Summary</Label>
-              <p className="text-xs text-muted-foreground">Morning overview of today's tasks</p>
+              <Label>{t('settings.dailySummary')}</Label>
+              <p className="text-xs text-muted-foreground">{t('settings.dailySummaryDesc')}</p>
             </div>
             <Switch checked={prefs.dailySummary} onCheckedChange={(v) => updatePref('dailySummary', v)} />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Streak Alerts</Label>
-              <p className="text-xs text-muted-foreground">Remind you to maintain your streak</p>
+              <Label>{t('settings.streakAlerts')}</Label>
+              <p className="text-xs text-muted-foreground">{t('settings.streakAlertDesc')}</p>
             </div>
             <Switch checked={prefs.streakAlerts} onCheckedChange={(v) => updatePref('streakAlerts', v)} />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Goal Reminders</Label>
-              <p className="text-xs text-muted-foreground">Progress updates for active goals</p>
+              <Label>{t('settings.goalReminders')}</Label>
+              <p className="text-xs text-muted-foreground">{t('settings.goalRemindersDesc')}</p>
             </div>
             <Switch checked={prefs.goalReminders} onCheckedChange={(v) => updatePref('goalReminders', v)} />
           </div>
@@ -140,14 +172,14 @@ const Settings = () => {
               <div className="border-t pt-4 mt-2">
                 <div className="flex items-center gap-2 mb-3">
                   <Smartphone className="h-4 w-4 text-muted-foreground" />
-                  <Label className="text-sm font-medium">Mobile Vibration</Label>
+                  <Label className="text-sm font-medium">{t('settings.vibration')}</Label>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Vibrate on Notifications</Label>
-                      <p className="text-xs text-muted-foreground">Vibrate your phone when a reminder fires</p>
+                      <Label>{t('settings.vibrateOnNotif')}</Label>
+                      <p className="text-xs text-muted-foreground">{t('settings.vibrateDesc')}</p>
                     </div>
                     <Switch checked={prefs.vibration} onCheckedChange={(v) => updatePref('vibration', v)} />
                   </div>
@@ -155,8 +187,8 @@ const Settings = () => {
                   {prefs.vibration && (
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label>Vibration Pattern</Label>
-                        <p className="text-xs text-muted-foreground">Choose how the vibration feels</p>
+                        <Label>{t('settings.vibrationPattern')}</Label>
+                        <p className="text-xs text-muted-foreground">{t('settings.vibrationPatternDesc')}</p>
                       </div>
                       <Select
                         value={prefs.vibrationPattern}
@@ -171,10 +203,10 @@ const Settings = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="short">Short</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="long">Long</SelectItem>
-                          <SelectItem value="double">Double tap</SelectItem>
+                          <SelectItem value="short">{t('vibration.short')}</SelectItem>
+                          <SelectItem value="medium">{t('vibration.medium')}</SelectItem>
+                          <SelectItem value="long">{t('vibration.long')}</SelectItem>
+                          <SelectItem value="double">{t('vibration.double')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -186,17 +218,18 @@ const Settings = () => {
         </CardContent>
       </Card>
 
+      {/* Google Calendar */}
       <Card className="glass-card border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Calendar className="h-5 w-5" />
-            Google Calendar Integration
+            {t('settings.googleCalendar')}
           </CardTitle>
-          <CardDescription>Connect to sync tasks with Google Calendar</CardDescription>
+          <CardDescription>{t('settings.googleCalendarDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4 text-sm space-y-3">
-            <p className="font-medium">Setup Instructions:</p>
+            <p className="font-medium">{t('settings.setupInstructions')}</p>
             <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
               <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" className="text-primary underline">Google Cloud Console</a></li>
               <li>Create a new project (or select an existing one)</li>
@@ -212,7 +245,7 @@ const Settings = () => {
           </div>
           <Button variant="outline" className="gap-2" onClick={() => toast.info('Google Calendar integration requires a Client ID. Follow the setup guide above.')}>
             <Calendar className="h-4 w-4" />
-            Connect to Google Calendar
+            {t('settings.connectGoogle')}
           </Button>
         </CardContent>
       </Card>
