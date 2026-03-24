@@ -9,12 +9,14 @@ import { Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useTasks } from '@/contexts/TaskContext';
+import { useI18n } from '@/contexts/I18nContext';
 
 const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const { streak } = useTasks();
+  const { t } = useI18n();
 
   const handleEdit = (task: Task) => {
     setEditingTask(task);
@@ -30,12 +32,12 @@ const Index = () => {
       >
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            Dashboard
+            {t('dashboard.title')}
             <Sparkles className="h-5 w-5 text-primary" />
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Manage your daily reminders
-            {streak.current > 0 && <span className="ml-2 text-category-work font-bold">🔥 {streak.current} day streak!</span>}
+            {t('dashboard.manageReminders')}
+            {streak.current > 0 && <span className="ml-2 text-category-work font-bold">🔥 {streak.current} {t('dashboard.dayStreak')}</span>}
           </p>
         </div>
 
@@ -46,8 +48,8 @@ const Index = () => {
             "gradient-health shadow-lg hover:scale-110 active:scale-95",
             "transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-category-health/30"
           )}
-          aria-label="Add new task"
-          title="Add new task"
+          aria-label={t('task.addNew')}
+          title={t('task.addNew')}
         >
           <Plus className="h-7 w-7 stroke-[2.5]" />
         </button>
@@ -56,7 +58,6 @@ const Index = () => {
       <StatsCards />
       <CompletionBar />
       <AISuggestions />
-      <TaskDisplay onEditTask={handleEdit} />
       <TaskDisplay onEditTask={handleEdit} />
 
       <TaskModal open={addModalOpen} onOpenChange={setAddModalOpen} editingTask={null} />

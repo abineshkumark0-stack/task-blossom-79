@@ -38,6 +38,7 @@ const App = () => (
             </Routes>
           </AppLayout>
         </TaskProvider>
+        </I18nProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTheme } from '@/hooks/useTheme';
 import { useTasks } from '@/contexts/TaskContext';
 import { Category, FilterStatus, CATEGORY_CONFIG } from '@/types/task';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface TopBarProps {
   onAddTask: () => void;
@@ -13,6 +14,7 @@ interface TopBarProps {
 export function TopBar({ onAddTask }: TopBarProps) {
   const { theme, toggleTheme } = useTheme();
   const { searchQuery, setSearchQuery, filterCategory, setFilterCategory, filterStatus, setFilterStatus } = useTasks();
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-40 glass border-b border-border px-4 md:px-6 py-3">
@@ -20,7 +22,7 @@ export function TopBar({ onAddTask }: TopBarProps) {
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search tasks..."
+            placeholder={t('task.search')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9 rounded-xl border-border/60 bg-muted/50 focus:bg-card transition-colors"
@@ -29,25 +31,25 @@ export function TopBar({ onAddTask }: TopBarProps) {
 
         <Select value={filterCategory} onValueChange={v => setFilterCategory(v as Category | 'all')}>
           <SelectTrigger className="w-[130px] rounded-xl">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('task.category')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('cat.all')}</SelectItem>
             {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
-              <SelectItem key={key} value={key}>{cfg.emoji} {cfg.label}</SelectItem>
+              <SelectItem key={key} value={key}>{cfg.emoji} {t(`cat.${key}`)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Select value={filterStatus} onValueChange={v => setFilterStatus(v as FilterStatus)}>
           <SelectTrigger className="w-[120px] rounded-xl">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('status.all')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
+            <SelectItem value="all">{t('status.all')}</SelectItem>
+            <SelectItem value="active">{t('status.active')}</SelectItem>
+            <SelectItem value="completed">{t('status.completed')}</SelectItem>
+            <SelectItem value="overdue">{t('status.overdue')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -57,7 +59,7 @@ export function TopBar({ onAddTask }: TopBarProps) {
           </Button>
           <Button onClick={onAddTask} size="sm" className="gap-1.5 gradient-primary text-primary-foreground rounded-xl glow-primary border-0 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Task</span>
+            <span className="hidden sm:inline">{t('task.addNew')}</span>
           </Button>
         </div>
       </div>
