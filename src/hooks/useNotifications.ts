@@ -5,13 +5,30 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 export interface NotificationPrefs {
   enabled: boolean;
-  beforeMinutes: number; // remind X minutes before
+  beforeMinutes: number;
   dailySummary: boolean;
   streakAlerts: boolean;
   goalReminders: boolean;
+  vibration: boolean;
+  vibrationPattern: 'short' | 'medium' | 'long' | 'double';
 }
 
+const VIBRATION_PATTERNS: Record<NotificationPrefs['vibrationPattern'], number[]> = {
+  short: [100],
+  medium: [200, 100, 200],
+  long: [500, 200, 500],
+  double: [100, 50, 100],
+};
+
 const DEFAULT_PREFS: NotificationPrefs = {
+  enabled: true,
+  beforeMinutes: 5,
+  dailySummary: true,
+  streakAlerts: true,
+  goalReminders: true,
+  vibration: true,
+  vibrationPattern: 'medium',
+};
   enabled: true,
   beforeMinutes: 5,
   dailySummary: true,
