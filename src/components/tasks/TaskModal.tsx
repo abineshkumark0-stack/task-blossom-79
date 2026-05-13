@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,9 @@ import { useTasks } from '@/contexts/TaskContext';
 import { Task, Category, CATEGORY_CONFIG, Priority, RepeatOption } from '@/types/task';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { Mic, MicOff } from 'lucide-react';
+import { useVoiceInput, parseVoiceTask } from '@/hooks/useVoiceInput';
+import { cn } from '@/lib/utils';
 
 interface TaskModalProps {
   open: boolean;
@@ -45,6 +48,15 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
     setErrors({});
   }, [editingTask, open]);
 
+  const handleVoice = useCallback((text: string) => {
+    const parsed = parseVoiceTask(text);
+    setTitle(parsed.title);
+    if (parsed.date) setDate(parsed.date);
+    if (parsed.time) setTime(parsed.time);
+    toast.success(`🎙️ "${parsed.title}"${parsed.date ? ' • ' + parsed.date : ''}${parsed.time ? ' ' + parsed.time : ''}`);
+  }, []);
+  const { listening, supported, start, stop } = useVoiceInput(handleVoice);
+
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = 'Title is required';
@@ -76,8 +88,26 @@ export function TaskModal({ open, onOpenChange, editingTask }: TaskModalProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="title">Title *</Label>
-            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Task title" />
+            <Label htmlFor="title" className="flex items-center justify-between">
+              <span>Title *</span>
+              {supported && (
+                <button
+                  type="button"
+                  onClick={listening ? stop : start}
+                  className={cn(
+                    'inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition-all',
+                    listening
+                      ? 'bg-destructive/15 text-destructive animate-pulse'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20'
+                  )}
+                  title={listening ? 'Stop' : 'Speak: e.g. "Tomorrow 6 PM study DBMS"'}
+                >
+                  {listening ? <MicOff className="h-3 w-3" /> : <Mic className="h-3 w-3" />}
+                  {listening ? 'Listening…' : 'Voice'}
+                </button>
+              )}
+            </Label>
+            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder='Task title (or tap "Voice")' />
             {errors.title && <p className="text-xs text-destructive mt-1">{errors.title}</p>}
           </div>
           <div>

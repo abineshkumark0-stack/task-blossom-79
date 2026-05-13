@@ -1,7 +1,8 @@
+import { useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
-import { Sun, Moon, Bell, Calendar, Clock, Globe, Smartphone } from 'lucide-react';
+import { Sun, Moon, Bell, Calendar, Clock, Globe, Smartphone, Palette, Download, Upload, Check } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,16 +10,59 @@ import { toast } from 'sonner';
 import { useNotifications, NotificationPrefs } from '@/hooks/useNotifications';
 import { useTasks } from '@/contexts/TaskContext';
 import { useI18n, LANGUAGES, Language } from '@/contexts/I18nContext';
+import { useAccentColor, ACCENT_COLORS, AccentId } from '@/hooks/useAccentColor';
+import { cn } from '@/lib/utils';
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
   const { tasks } = useTasks();
   const { prefs, setPrefs, requestPermission } = useNotifications(tasks);
   const { t, language, setLanguage } = useI18n();
+  const { accent, setAccent } = useAccentColor();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const updatePref = <K extends keyof NotificationPrefs>(key: K, value: NotificationPrefs[K]) => {
     setPrefs(prev => ({ ...prev, [key]: value }));
     toast.success('Notification preference updated');
+  };
+
+  const handleExport = () => {
+    const KEYS = [
+      'reminder-tasks','reminder-goals','reminder-timetable','reminder-completion-history',
+      'reminder-streak','reminder-notif-prefs','reminder-accent','reminder-language',
+      'reminder-focus-stats','reminder-focus-settings',
+    ];
+    const data: Record<string, unknown> = { exportedAt: new Date().toISOString(), version: 1 };
+    KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) data[k] = JSON.parse(v); });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `productivity-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('📦 Backup downloaded');
+  };
+
+  const handleImport = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        let count = 0;
+        Object.entries(data).forEach(([k, v]) => {
+          if (k.startsWith('reminder-')) {
+            localStorage.setItem(k, JSON.stringify(v));
+            count++;
+          }
+        });
+        toast.success(`✅ Restored ${count} keys. Reloading…`);
+        setTimeout(() => window.location.reload(), 800);
+      } catch {
+        toast.error('Invalid backup file');
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleEnableNotifications = async () => {
@@ -78,11 +122,60 @@ const Settings = () => {
             {t('settings.appearance')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>{t('settings.darkMode')}</Label>
             <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
           </div>
+          <div className="border-t pt-4">
+            <Label className="flex items-center gap-2 mb-3">
+              <Palette className="h-4 w-4" /> Accent color
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {ACCENT_COLORS.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { setAccent(c.id as AccentId); toast.success(`🎨 ${c.label} accent`); }}
+                  className={cn(
+                    'h-9 w-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95 flex items-center justify-center',
+                    accent === c.id ? 'border-foreground shadow-lg' : 'border-transparent'
+                  )}
+                  style={{ background: `hsl(${c.primary})`, boxShadow: accent === c.id ? `0 0 14px hsl(${c.primary} / 0.6)` : undefined }}
+                  aria-label={c.label}
+                  title={c.label}
+                >
+                  {accent === c.id && <Check className="h-4 w-4 text-white" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Backup & Restore */}
+      <Card className="glass-card border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Download className="h-5 w-5" />
+            Backup & Restore
+          </CardTitle>
+          <CardDescription>Export all tasks, goals, streaks and settings as a JSON file. Restore later or on another device.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <Download className="h-4 w-4" /> Export JSON
+          </Button>
+          <Button variant="outline" onClick={() => fileRef.current?.click()} className="gap-2">
+            <Upload className="h-4 w-4" /> Import JSON
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ''; }}
+          />
         </CardContent>
       </Card>
 

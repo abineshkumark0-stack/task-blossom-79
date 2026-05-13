@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ListTodo, CalendarDays, Settings, ChevronLeft, ChevronRight, Sparkles, BarChart3, Target, Clock } from 'lucide-react';
+import { LayoutDashboard, ListTodo, CalendarDays, Settings, ChevronLeft, ChevronRight, Sparkles, BarChart3, Target, Clock, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useTasks } from '@/contexts/TaskContext';
@@ -15,6 +15,7 @@ export function Sidebar() {
     { to: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
     { to: '/tasks', icon: ListTodo, label: t('nav.allTasks') },
     { to: '/calendar', icon: CalendarDays, label: t('nav.calendar') },
+    { to: '/focus', icon: Brain, label: 'Focus' },
     { to: '/analytics', icon: BarChart3, label: t('nav.analytics') },
     { to: '/goals', icon: Target, label: t('nav.goals') },
     { to: '/timetable', icon: Clock, label: t('nav.timetable') },

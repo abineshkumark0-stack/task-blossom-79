@@ -23,6 +23,19 @@ const Index = () => {
     setEditModalOpen(true);
   };
 
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 5 ? 'Burning the midnight oil 🌙' :
+    hour < 12 ? 'Good Morning ☀️' :
+    hour < 17 ? 'Good Afternoon 👋' :
+    hour < 21 ? 'Good Evening 👋' :
+    'Good Night 🌌';
+  const motivator =
+    hour < 12 ? "Let's set the tone for a winning day 🚀" :
+    hour < 17 ? "Keep the momentum going 🔥" :
+    hour < 21 ? "Let's finish your goals today 🔥" :
+    "Wrap it up — future you will smile 😎";
+
   return (
     <div className="space-y-6 pb-24 md:pb-0">
       <motion.div
@@ -32,11 +45,11 @@ const Index = () => {
       >
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            {t('dashboard.title')}
-            <Sparkles className="h-5 w-5 text-primary" />
+            {greeting}
+            <Sparkles className="h-5 w-5 text-primary animate-pulse" />
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {t('dashboard.manageReminders')}
+            {motivator}
             {streak.current > 0 && <span className="ml-2 text-category-work font-bold">🔥 {streak.current} {t('dashboard.dayStreak')}</span>}
           </p>
         </div>
