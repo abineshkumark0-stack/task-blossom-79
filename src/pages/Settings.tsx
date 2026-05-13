@@ -1,7 +1,8 @@
+import { useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
-import { Sun, Moon, Bell, Calendar, Clock, Globe, Smartphone } from 'lucide-react';
+import { Sun, Moon, Bell, Calendar, Clock, Globe, Smartphone, Palette, Download, Upload, Check } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,16 +10,59 @@ import { toast } from 'sonner';
 import { useNotifications, NotificationPrefs } from '@/hooks/useNotifications';
 import { useTasks } from '@/contexts/TaskContext';
 import { useI18n, LANGUAGES, Language } from '@/contexts/I18nContext';
+import { useAccentColor, ACCENT_COLORS, AccentId } from '@/hooks/useAccentColor';
+import { cn } from '@/lib/utils';
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
   const { tasks } = useTasks();
   const { prefs, setPrefs, requestPermission } = useNotifications(tasks);
   const { t, language, setLanguage } = useI18n();
+  const { accent, setAccent } = useAccentColor();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const updatePref = <K extends keyof NotificationPrefs>(key: K, value: NotificationPrefs[K]) => {
     setPrefs(prev => ({ ...prev, [key]: value }));
     toast.success('Notification preference updated');
+  };
+
+  const handleExport = () => {
+    const KEYS = [
+      'reminder-tasks','reminder-goals','reminder-timetable','reminder-completion-history',
+      'reminder-streak','reminder-notif-prefs','reminder-accent','reminder-language',
+      'reminder-focus-stats','reminder-focus-settings',
+    ];
+    const data: Record<string, unknown> = { exportedAt: new Date().toISOString(), version: 1 };
+    KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) data[k] = JSON.parse(v); });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `productivity-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('📦 Backup downloaded');
+  };
+
+  const handleImport = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        let count = 0;
+        Object.entries(data).forEach(([k, v]) => {
+          if (k.startsWith('reminder-')) {
+            localStorage.setItem(k, JSON.stringify(v));
+            count++;
+          }
+        });
+        toast.success(`✅ Restored ${count} keys. Reloading…`);
+        setTimeout(() => window.location.reload(), 800);
+      } catch {
+        toast.error('Invalid backup file');
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleEnableNotifications = async () => {
