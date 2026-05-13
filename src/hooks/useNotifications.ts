@@ -74,7 +74,17 @@ export function useNotifications(tasks: Task[]) {
     const now = Date.now();
     const reminderOffset = prefs.beforeMinutes * 60000;
 
-    tasks.filter(t => !t.completed).forEach(task => {
+    const FUNNY_LINES = [
+      'Your task is still waiting 👀',
+      'Future you will thank you 😎',
+      "Let's crush this one 🔥",
+      "Don't ghost your goals 👻",
+      'Tiny step, big win 🚀',
+      'Procrastination has entered the chat… block it 🛑',
+    ];
+    const pickLine = (i: number) => FUNNY_LINES[i % FUNNY_LINES.length];
+
+    tasks.filter(t => !t.completed).forEach((task, idx) => {
       const taskTime = new Date(`${task.date}T${task.time}`).getTime();
       const reminderTime = taskTime - reminderOffset;
       const delay = reminderTime - now;
@@ -83,7 +93,7 @@ export function useNotifications(tasks: Task[]) {
         const timeout = setTimeout(() => {
           sendNotification(
             `⏰ ${task.title}`,
-            task.description || `Due in ${prefs.beforeMinutes} minutes — time to get it done!`,
+            task.description || `Due in ${prefs.beforeMinutes} min — ${pickLine(idx)}`,
             `task-${task.id}`
           );
         }, delay);
@@ -96,11 +106,23 @@ export function useNotifications(tasks: Task[]) {
         const exactTimeout = setTimeout(() => {
           sendNotification(
             `🚨 ${task.title} — NOW!`,
-            task.description || 'This task is due right now!',
+            task.description || pickLine(idx + 1),
             `task-now-${task.id}`
           );
         }, exactDelay);
         timeoutsRef.current.set(`exact-${task.id}`, exactTimeout);
+      }
+
+      // Overdue nudge: if already overdue, ping after a short delay
+      if (exactDelay < 0 && exactDelay > -86400000) {
+        const overdueTimeout = setTimeout(() => {
+          sendNotification(
+            `⚠️ Overdue: ${task.title}`,
+            pickLine(idx + 2),
+            `task-overdue-${task.id}`
+          );
+        }, 5000);
+        timeoutsRef.current.set(`overdue-${task.id}`, overdueTimeout);
       }
     });
 
