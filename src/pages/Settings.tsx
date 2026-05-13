@@ -122,11 +122,60 @@ const Settings = () => {
             {t('settings.appearance')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>{t('settings.darkMode')}</Label>
             <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
           </div>
+          <div className="border-t pt-4">
+            <Label className="flex items-center gap-2 mb-3">
+              <Palette className="h-4 w-4" /> Accent color
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {ACCENT_COLORS.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => { setAccent(c.id as AccentId); toast.success(`🎨 ${c.label} accent`); }}
+                  className={cn(
+                    'h-9 w-9 rounded-full border-2 transition-all hover:scale-110 active:scale-95 flex items-center justify-center',
+                    accent === c.id ? 'border-foreground shadow-lg' : 'border-transparent'
+                  )}
+                  style={{ background: `hsl(${c.primary})`, boxShadow: accent === c.id ? `0 0 14px hsl(${c.primary} / 0.6)` : undefined }}
+                  aria-label={c.label}
+                  title={c.label}
+                >
+                  {accent === c.id && <Check className="h-4 w-4 text-white" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Backup & Restore */}
+      <Card className="glass-card border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Download className="h-5 w-5" />
+            Backup & Restore
+          </CardTitle>
+          <CardDescription>Export all tasks, goals, streaks and settings as a JSON file. Restore later or on another device.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <Download className="h-4 w-4" /> Export JSON
+          </Button>
+          <Button variant="outline" onClick={() => fileRef.current?.click()} className="gap-2">
+            <Upload className="h-4 w-4" /> Import JSON
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ''; }}
+          />
         </CardContent>
       </Card>
 
