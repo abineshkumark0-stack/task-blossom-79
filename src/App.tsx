@@ -13,6 +13,7 @@ import Analytics from "./pages/Analytics";
 import Goals from "./pages/Goals";
 import Timetable from "./pages/Timetable";
 import Settings from "./pages/Settings";
+import Focus from "./pages/Focus";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/goals" element={<Goals />} />
               <Route path="/timetable" element={<Timetable />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/focus" element={<Focus />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
